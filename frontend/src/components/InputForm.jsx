@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { predict } from "../api/api";
+import { predict } from "../api/api";  // Import the predict function
 
 const InputForm = () => {
   const [recency, setRecency] = useState("");
@@ -14,11 +14,20 @@ const InputForm = () => {
     setResult(null);
 
     try {
-      const features = [parseFloat(recency), parseInt(quantity), parseFloat(monetaryValue)];
-      const prediction = await predict(features);
-      setResult(prediction);
+      const features = [
+        parseFloat(recency),
+        parseInt(quantity),
+        parseFloat(monetaryValue),
+      ];
+      const prediction = await predict(features);  // Get prediction from backend
+
+      if (prediction && prediction.prediction) {
+        setResult(prediction.prediction);  // Update the result with the prediction
+      } else {
+        setError("No prediction result received.");
+      }
     } catch (err) {
-      setError(err.message);
+      setError("Error: " + err.message);  // Handle error
     }
   };
 
@@ -55,6 +64,7 @@ const InputForm = () => {
         </div>
         <button type="submit">Predict</button>
       </form>
+
       {result && <div>Cluster Prediction: {result}</div>}
       {error && <div style={{ color: "red" }}>Error: {error}</div>}
     </div>
