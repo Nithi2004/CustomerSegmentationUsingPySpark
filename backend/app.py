@@ -1,21 +1,16 @@
 import os
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from pyspark.sql import SparkSession
-from pyspark.ml.clustering import KMeansModel
-from pyspark.ml.classification import LogisticRegressionModel
-from pyspark.ml.feature import VectorAssembler, StandardScaler
+import joblib
+import numpy as np
 
 # Initialize Flask app
 app = Flask(__name__)
 CORS(app)
 
-# Initialize Spark session
-spark = SparkSession.builder.appName('customer_segmentation_api').getOrCreate()
-
-# Load saved models
-unsupervised_model = KMeansModel.load("models/best_unsupervised_model")
-supervised_model = LogisticRegressionModel.load("models/best_supervised_model")
+# Load saved models (using joblib)
+unsupervised_model = joblib.load("models/best_unsupervised_model.pkl")  # Assuming the unsupervised model is saved as .pkl
+supervised_model = joblib.load("models/best_supervised_model.pkl")  # Assuming the supervised model is saved as .pkl
 
 # Define the prediction route
 @app.route('/predict', methods=['POST'])
@@ -27,32 +22,21 @@ def predict():
         frequency = float(data['frequency'])
         monetary_value = float(data['monetary_value'])
 
-        # Create a Spark DataFrame for the input
-        input_data = [(recency, frequency, monetary_value)]
-        input_df = spark.createDataFrame(input_data, ['recency', 'frequency', 'monetary_value'])
+        # Prepare the input features for prediction
+        input_data = np.array([[recency, frequency, monetary_value]])
 
-        # Assemble and scale features
-        assembler = VectorAssembler(inputCols=['recency', 'frequency', 'monetary_value'], outputCol='features')
-        input_df = assembler.transform(input_df)
+        # Unsupervised Prediction (e.g., KMeans)
+        cluster = unsupervised_model.predict(input_data)  # Get the predicted cluster from the unsupervised model
 
-        scaler = StandardScaler(inputCol='features', outputCol='scaled_features', withMean=False, withStd=True)
-        scaler_model = scaler.fit(input_df)
-        input_df = scaler_model.transform(input_df)
+        # Supervised Prediction (e.g., Logistic Regression)
+        classification = supervised_model.predict(input_data)  # Get the predicted class from the supervised model
 
-        # Unsupervised Prediction (KMeans)
-        unsupervised_result = unsupervised_model.transform(input_df)
-        cluster = unsupervised_result.select("prediction").collect()[0][0]
-
-        # Supervised Prediction (Logistic Regression)
-        supervised_result = supervised_model.transform(input_df)
-        classification = supervised_result.select("prediction").collect()[0][0]
-
-        # Return predictions
+        # Return predictions as JSON response
         return jsonify({
             "unsupervised_model": "KMeans",
-            "cluster": int(cluster),
+            "cluster": int(cluster[0]),
             "supervised_model": "LogisticRegression",
-            "class": int(classification),
+            "class": int(classification[0]),
             "message": "Prediction successful."
         })
 

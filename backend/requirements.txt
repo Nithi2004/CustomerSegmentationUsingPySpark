@@ -2,3 +2,6 @@ Flask
 pyspark
 scikit-learn
 pandas
+Flask==2.1.2
+flask-cors==3.0.10
+pyspark==3.4.1
