@@ -1,47 +1,38 @@
-import os
+import pickle
 from flask import Flask, request, jsonify
-from flask_cors import CORS
-import joblib
-import numpy as np
+from flask_cors import CORS  # To handle CORS issues
 
-# Initialize Flask app
+# Load the trained KMeans model
+with open("best_kmeans_model.pkl", "rb") as file:
+    model = pickle.load(file)
+
 app = Flask(__name__)
-CORS(app)
+CORS(app)  # Enable CORS for all routes
 
-# Load saved models (using joblib)
-unsupervised_model = joblib.load("models/best_unsupervised_model.pkl")  # Assuming the unsupervised model is saved as .pkl
-supervised_model = joblib.load("models/best_supervised_model.pkl")  # Assuming the supervised model is saved as .pkl
+@app.route("/")
+def home():
+    return "Backend is running!"
 
-# Define the prediction route
-@app.route('/predict', methods=['POST'])
+@app.route("/predict", methods=["POST"])
 def predict():
+    data = request.json
     try:
-        # Parse JSON input
-        data = request.json
-        recency = float(data['recency'])
-        frequency = float(data['frequency'])
-        monetary_value = float(data['monetary_value'])
-
-        # Prepare the input features for prediction
-        input_data = np.array([[recency, frequency, monetary_value]])
-
-        # Unsupervised Prediction (e.g., KMeans)
-        cluster = unsupervised_model.predict(input_data)  # Get the predicted cluster from the unsupervised model
-
-        # Supervised Prediction (e.g., Logistic Regression)
-        classification = supervised_model.predict(input_data)  # Get the predicted class from the supervised model
-
-        # Return predictions as JSON response
-        return jsonify({
-            "unsupervised_model": "KMeans",
-            "cluster": int(cluster[0]),
-            "supervised_model": "LogisticRegression",
-            "class": int(classification[0]),
-            "message": "Prediction successful."
-        })
-
+        # Extract features from the input
+        features = data.get("features", [])
+        if not features or not isinstance(features, list):
+            return jsonify({"error": "Invalid or missing features"}), 400
+        
+        # Perform prediction
+        prediction = model.predict([features])
+        return jsonify({"prediction": prediction.tolist()})
     except Exception as e:
-        return jsonify({"error": str(e)})
+        return jsonify({"error": str(e)}), 500
+import pickle
 
-if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+with open("best_kmeans_model.pkl", "rb") as file:
+    obj = pickle.load(file)
+
+print(type(obj))  # Should print <class 'sklearn.cluster._kmeans.KMeans'>
+
+if __name__ == "__main__":
+    app.run(debug=True)
