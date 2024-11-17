@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { predict } from "../api/api";  // Import the predict function
+import { predict } from "../api/api";
+import "./InputForm.css"; // Import the custom CSS file
 
 const InputForm = () => {
   const [recency, setRecency] = useState("");
@@ -19,54 +20,72 @@ const InputForm = () => {
         parseInt(quantity),
         parseFloat(monetaryValue),
       ];
-      const prediction = await predict(features);  // Get prediction from backend
-
-      if (prediction && prediction.prediction) {
-        setResult(prediction.prediction);  // Update the result with the prediction
-      } else {
-        setError("No prediction result received.");
-      }
+      // Send features to the backend for prediction
+      const prediction = await predict(features);
+      
+      // Set the prediction result to display
+      setResult(prediction.prediction);  // Get prediction string
     } catch (err) {
-      setError("Error: " + err.message);  // Handle error
+      setError(err.message);
     }
   };
 
   return (
-    <div>
-      <h2>Predict Customer Segmentation</h2>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>Recency (days):</label>
+    <div className="input-form-container">
+      <h2 className="form-heading">Predict Customer Segmentation</h2>
+      <form onSubmit={handleSubmit} className="form">
+        <div className="form-field">
+          <label htmlFor="recency" className="label">
+            Recency (days):
+          </label>
           <input
             type="number"
+            id="recency"
             value={recency}
             onChange={(e) => setRecency(e.target.value)}
+            className="input"
             required
           />
         </div>
-        <div>
-          <label>Quantity:</label>
+
+        <div className="form-field">
+          <label htmlFor="quantity" className="label">
+            Quantity:
+          </label>
           <input
             type="number"
+            id="quantity"
             value={quantity}
             onChange={(e) => setQuantity(e.target.value)}
+            className="input"
             required
           />
         </div>
-        <div>
-          <label>Monetary Value:</label>
+
+        <div className="form-field">
+          <label htmlFor="monetaryValue" className="label">
+            Monetary Value:
+          </label>
           <input
             type="number"
+            id="monetaryValue"
             value={monetaryValue}
             onChange={(e) => setMonetaryValue(e.target.value)}
+            className="input"
             required
           />
         </div>
-        <button type="submit">Predict</button>
+
+        <button type="submit" className="submit-button">
+          Predict
+        </button>
       </form>
 
-      {result && <div>Cluster Prediction: {result}</div>}
-      {error && <div style={{ color: "red" }}>Error: {error}</div>}
+      {result && (
+        <div className="result-message">{`Cluster Prediction: ${result}`}</div>
+      )}
+
+      {error && <div className="error-message">{`Error: ${error}`}</div>}
     </div>
   );
 };

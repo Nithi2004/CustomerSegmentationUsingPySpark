@@ -1,0 +1,84 @@
+/* InputForm.css */
+
+/* Container Styles */
+.input-form-container {
+  max-width: 600px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Heading Styles */
+.form-heading {
+  font-size: 2rem;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 1.5rem;
+  color: #333;
+}
+
+/* Form Styles */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Form Field Styles */
+.form-field {
+  display: flex;
+  flex-direction: column;
+}
+
+.label {
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+  color: #666;
+}
+
+.input {
+  padding: 1rem;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  outline: none;
+  transition: border 0.3s;
+}
+
+.input:focus {
+  border-color: #4c6ef5;
+}
+
+/* Button Styles */
+.submit-button {
+  padding: 1rem;
+  background-color: #4c6ef5;
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.submit-button:hover {
+  background-color: #3b56d6;
+}
+
+/* Result and Error Styles */
+.result-message {
+  margin-top: 1rem;
+  font-size: 1.2rem;
+  color: green;
+  text-align: center;
+}
+
+.error-message {
+  margin-top: 1rem;
+  font-size: 1.2rem;
+  color: red;
+  text-align: center;
+}
