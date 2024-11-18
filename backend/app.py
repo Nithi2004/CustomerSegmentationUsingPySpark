@@ -1,11 +1,17 @@
 import pickle
 from flask import Flask, request, jsonify
 from flask_cors import CORS  # To handle CORS issues
+import logging
+import os
+
+# Set up logging for debugging
+logging.basicConfig(level=logging.INFO)
 
 # Load the trained KMeans model (although we won't be using it in this case)
 with open("kmeans_model.pkl", "rb") as file:
     model = pickle.load(file)
 
+# Initialize Flask app
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
 
@@ -33,7 +39,6 @@ def classify_customer(recency, quantity, monetary_value):
     else:
         return "Other"
 
-
 @app.route("/predict", methods=["POST"])
 def predict():
     data = request.json
@@ -52,5 +57,7 @@ def predict():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+# Run the app on Render's provided port
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=True)
