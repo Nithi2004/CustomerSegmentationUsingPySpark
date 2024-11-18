@@ -7,9 +7,19 @@ import os
 # Set up logging for debugging
 logging.basicConfig(level=logging.INFO)
 
-# Load the trained KMeans model (although we won't be using it in this case)
-with open("kmeans_model.pkl", "rb") as file:
-    model = pickle.load(file)
+# Get the absolute path of the current directory
+current_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Load the trained KMeans model (using absolute path)
+model_path = os.path.join(current_dir, "kmeans_model.pkl")
+logging.info(f"Loading model from {model_path}")
+try:
+    with open(model_path, "rb") as file:
+        model = pickle.load(file)
+    logging.info("Model loaded successfully!")
+except FileNotFoundError:
+    logging.error(f"Model file not found at {model_path}")
+    raise
 
 # Initialize Flask app
 app = Flask(__name__)
