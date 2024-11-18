@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { predict } from "../api/api";
 import "./InputForm.css"; // Import the custom CSS file
 
 const InputForm = () => {
@@ -7,27 +6,45 @@ const InputForm = () => {
   const [quantity, setQuantity] = useState("");
   const [monetaryValue, setMonetaryValue] = useState("");
   const [result, setResult] = useState(null);
-  const [error, setError] = useState("");
 
-  const handleSubmit = async (e) => {
+  // Logic for determining the cluster based on the input
+  const determineCluster = (recency, quantity, monetaryValue) => {
+    if (monetaryValue > 100000 && quantity > 50) {
+      return "High-value frequent buyer";
+    } else if (monetaryValue > 100000) {
+      return "High-value customer";
+    } else if (quantity > 50) {
+      return "Frequent buyer";
+    } else if (recency < 30 && quantity > 10) {
+      return "Active customer";
+    } else if (monetaryValue > 50000) {
+      return "High spender";
+    } else if (recency < 30) {
+      return "New customer";
+    } else if (monetaryValue < 1000) {
+      return "Low-value customer";
+    } else {
+      return "Other";
+    }
+  };
+
+  const handleSubmit = (e) => {
     e.preventDefault();
-    setError("");
     setResult(null);
 
-    try {
-      const features = [
-        parseFloat(recency),
-        parseInt(quantity),
-        parseFloat(monetaryValue),
-      ];
-      // Send features to the backend for prediction
-      const prediction = await predict(features);
-      
-      // Set the prediction result to display
-      setResult(prediction.prediction);  // Get prediction string
-    } catch (err) {
-      setError(err.message);
+    // Ensure inputs are valid before processing
+    if (!recency || !quantity || !monetaryValue) {
+      setResult("Error: Please fill in all fields correctly.");
+      return;
     }
+
+    const cluster = determineCluster(
+      parseFloat(recency),
+      parseInt(quantity),
+      parseFloat(monetaryValue)
+    );
+
+    setResult(cluster);
   };
 
   return (
@@ -84,8 +101,6 @@ const InputForm = () => {
       {result && (
         <div className="result-message">{`Cluster Prediction: ${result}`}</div>
       )}
-
-      {error && <div className="error-message">{`Error: ${error}`}</div>}
     </div>
   );
 };
